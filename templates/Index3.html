@@ -1,0 +1,309 @@
+<html lang="en" class=""><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Manager</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        h1, h3, h4 {
+            color: #343a40;
+        }
+        .chart-container, .table-container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        canvas {
+            max-height: 400px;
+        }
+    </style>
+<link type="text/css" rel="stylesheet" charset="UTF-8" href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=QDA/d=0/rs=AN8SPfrycRFEIstD_ODMax_0dvnH_HM3_Q/m=el_main_css"></head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Finance Manager</h1>
+
+        <!-- Current Balance and Untouchable Reserve -->
+        <div class="row text-center">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h3>Current Balance</h3>
+                    <h4 id="current-balance">$</h4>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h3>Untouchable Reserve (НЗ)</h3>
+                    <h4 id="untouchable-reserve">$</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Income and Expense Forms -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h4>Add Income</h4>
+                    <form id="add-income-form">
+                        <div class="mb-3">
+                            <label for="income-amount" class="form-label">Amount</label>
+                            <input type="number" class="form-control" id="income-amount" required="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="income-category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="income-category" required="">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Income</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="chart-container">
+                    <h4>Add Expense</h4>
+                    <form id="add-expense-form">
+                        <div class="mb-3">
+                            <label for="expense-amount" class="form-label">Amount</label>
+                            <input type="number" class="form-control" id="expense-amount" required="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="expense-category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="expense-category" required="">
+                        </div>
+                        <button type="submit" class="btn btn-danger">Add Expense</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Income and Expenses Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Total Income: $<span id="total-income">&lt;bound method FinanceManager.total_income of &lt;__main__.FinanceManager object at 0x00000185847FC200&gt;&gt;</span></h4>
+                    <canvas id="incomeChart" width="520" height="260" style="display: block; box-sizing: border-box; height: 208px; width: 416px;"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Total Expenses: $<span id="total-expense">&lt;bound method FinanceManager.total_expense of &lt;__main__.FinanceManager object at 0x00000185847FC200&gt;&gt;</span></h4>
+                    <canvas id="expenseChart" width="520" height="260" style="display: block; box-sizing: border-box; height: 208px; width: 416px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Charts for Income and Expenses Distribution -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Income Distribution by Category</h4>
+                    <canvas id="incomePieChart" width="520" height="500" style="display: block; box-sizing: border-box; height: 400px; width: 416px;"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Expenses Distribution by Category</h4>
+                    <canvas id="expensePieChart" width="520" height="500" style="display: block; box-sizing: border-box; height: 400px; width: 416px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History Tables -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-container">
+                    <h4>Income History</h4>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="income-history">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="table-container">
+                    <h4>Expense History</h4>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-history">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js Script -->
+    <script>
+        var incomeLabels = [null];
+        var incomeValues = [450.0];
+        var expenseLabels = [];
+        var expenseValues = [];
+
+        // Bar Charts
+        var incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        var incomeChart = new Chart(incomeCtx, {
+            type: 'bar',
+            data: {
+                labels: incomeLabels,
+                datasets: [{
+                    label: 'Income',
+                    data: incomeValues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        var expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        var expenseChart = new Chart(expenseCtx, {
+            type: 'bar',
+            data: {
+                labels: expenseLabels,
+                datasets: [{
+                    label: 'Expenses',
+                    data: expenseValues,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Pie Charts
+        var incomePieCtx = document.getElementById('incomePieChart').getContext('2d');
+        var incomePieChart = new Chart(incomePieCtx, {
+            type: 'pie',
+            data: {
+                labels: incomeLabels,
+                datasets: [{
+                    label: 'Income Distribution',
+                    data: incomeValues,
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        var expensePieCtx = document.getElementById('expensePieChart').getContext('2d');
+        var expensePieChart = new Chart(expensePieCtx, {
+            type: 'pie',
+            data: {
+                labels: expenseLabels,
+                datasets: [{
+                    label: 'Expense Distribution',
+                    data: expenseValues,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 159, 64, 0.6)',
+                        'rgba(255, 205, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)'
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // AJAX for dynamic updates
+        $('#add-income-form').submit(function(e) {
+            e.preventDefault();
+            const amount = $('#income-amount').val();
+            const category = $('#income-category').val();
+            $.ajax({
+                url: '/add_income',
+                type: 'POST',
+                data: { amount: amount, category: category },
+                success: function(response) {
+                    location.reload();
+                }
+            });
+        });
+
+        $('#add-expense-form').submit(function(e) {
+            e.preventDefault();
+            const amount = $('#expense-amount').val();
+            const category = $('#expense-category').val();
+            $.ajax({
+                url: '/add_expense',
+                type: 'POST',
+                data: { amount: amount, category: category },
+                success: function(response) {
+                    location.reload();
+                }
+            });
+        });
+    </script><div id="goog-gt-tt" class="VIpgJd-yAWNEb-L7lbkb skiptranslate" style="border-radius: 12px; margin: 0 0 0 -23px; padding: 0; font-family: 'Google Sans', Arial, sans-serif;" data-id=""><div id="goog-gt-vt" class="VIpgJd-yAWNEb-hvhgNd"><div class=" VIpgJd-yAWNEb-hvhgNd-l4eHX-i3jM8c"><img src="https://fonts.gstatic.com/s/i/productlogos/translate/v14/24px.svg" width="24" height="24" alt=""></div><div class=" VIpgJd-yAWNEb-hvhgNd-k77Iif-i3jM8c"><div class="VIpgJd-yAWNEb-hvhgNd-IuizWc" dir="ltr">Исходный текст</div><div id="goog-gt-original-text" class="VIpgJd-yAWNEb-nVMfcd-fmcmS VIpgJd-yAWNEb-hvhgNd-axAV1"></div></div><div class="VIpgJd-yAWNEb-hvhgNd-N7Eqid ltr"><div class="VIpgJd-yAWNEb-hvhgNd-N7Eqid-B7I4Od ltr" dir="ltr"><div class="VIpgJd-yAWNEb-hvhgNd-UTujCb">Оцените этот перевод</div><div class="VIpgJd-yAWNEb-hvhgNd-eO9mKe">Ваш отзыв поможет нам улучшить Google Переводчик</div></div><div class="VIpgJd-yAWNEb-hvhgNd-xgov5 ltr"><button id="goog-gt-thumbUpButton" type="button" class="VIpgJd-yAWNEb-hvhgNd-bgm6sf" title="Хороший перевод" aria-label="Хороший перевод" aria-pressed="false"><span id="goog-gt-thumbUpIcon"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M21 7h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 0S7.08 6.85 7 7H2v13h16c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73V9c0-1.1-.9-2-2-2zM7 18H4V9h3v9zm14-7l-3 7H9V8l4.34-4.34L12 9h9v2z"></path></svg></span><span id="goog-gt-thumbUpIconFilled"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M21 7h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 0S7.08 6.85 7 7v13h11c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73V9c0-1.1-.9-2-2-2zM5 7H1v13h4V7z"></path></svg></span></button><button id="goog-gt-thumbDownButton" type="button" class="VIpgJd-yAWNEb-hvhgNd-bgm6sf" title="Плохой перевод" aria-label="Плохой перевод" aria-pressed="false"><span id="goog-gt-thumbDownIcon"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M3 17h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 24s7.09-6.85 7.17-7h5V4H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2zM17 6h3v9h-3V6zM3 13l3-7h9v10l-4.34 4.34L12 15H3v-2z"></path></svg></span><span id="goog-gt-thumbDownIconFilled"><svg width="24" height="24" viewBox="0 0 24 24" focusable="false" class="VIpgJd-yAWNEb-hvhgNd-THI6Vb NMm5M"><path d="M3 17h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 24s7.09-6.85 7.17-7V4H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2zm16 0h4V4h-4v13z"></path></svg></span></button></div></div><div id="goog-gt-votingHiddenPane" class="VIpgJd-yAWNEb-hvhgNd-aXYTce"><form id="goog-gt-votingForm" action="//translate.googleapis.com/translate_voting?client=te_lib" method="post" target="votingFrame" class="VIpgJd-yAWNEb-hvhgNd-aXYTce"><input type="text" name="sl" id="goog-gt-votingInputSrcLang"><input type="text" name="tl" id="goog-gt-votingInputTrgLang"><input type="text" name="query" id="goog-gt-votingInputSrcText"><input type="text" name="gtrans" id="goog-gt-votingInputTrgText"><input type="text" name="vote" id="goog-gt-votingInputVote"></form><iframe name="votingFrame" frameborder="0"></iframe></div></div></div>
+
+</body></html>
