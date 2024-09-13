@@ -6,11 +6,8 @@
     <title>Finance Manager</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Custom CSS -->
     <style>
         body {
             background-color: #f8f9fa;
@@ -44,7 +41,7 @@
             </div>
             <div class="col-md-6 mb-4">
                 <div class="chart-container">
-                    <h3>Untouchable Reserve (НЗ)</h4>
+                    <h3>Untouchable Reserve (НЗ)</h3>
                     <h4 id="untouchable-reserve">$0.00</h4>
                 </div>
             </div>
@@ -98,6 +95,22 @@
                 <div class="chart-container">
                     <h4>Total Expenses: $<span id="total-expense">0.00</span></h4>
                     <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Charts for Income and Expenses Over Time -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Income Over Time</h4>
+                    <canvas id="incomeLineChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4>Expenses Over Time</h4>
+                    <canvas id="expenseLineChart"></canvas>
                 </div>
             </div>
         </div>
@@ -160,67 +173,115 @@
     <!-- Chart.js Script -->
     <script>
         function fetchData() {
-            $.get('/get_data', function(data) {
-                // Update balance and reserve
-                $('#current-balance').text('$' + data.balance.toFixed(2));
-                $('#untouchable-reserve').text('$' + data.reserve.toFixed(2));
-                $('#total-income').text(data.total_income.toFixed(2));
-                $('#total-expense').text(data.total_expense.toFixed(2));
+        $.get('/get_data', function(data) {
+        // Обновите элементы UI
+        $('#current-balance').text('$' + data.balance.toFixed(2));
+        $('#untouchable-reserve').text('$' + data.reserve.toFixed(2));
+        $('#total-income').text(data.total_income.toFixed(2));
+        $('#total-expense').text(data.total_expense.toFixed(2));
 
-                // Update charts
-                var incomeLabels = Object.keys(data.incomes);
-                var incomeValues = Object.values(data.incomes);
-                var expenseLabels = Object.keys(data.expenses);
-                var expenseValues = Object.values(data.expenses);
+        var incomeLabels = Object.keys(data.incomes);
+        var incomeValues = Object.values(data.incomes);
+        var expenseLabels = Object.keys(data.expenses);
+        var expenseValues = Object.values(data.expenses);
 
-                if (window.incomeChart) {
-                    window.incomeChart.destroy();
-                }
-                if (window.expenseChart) {
-                    window.expenseChart.destroy();
-                }
-                if (window.incomePieChart) {
-                    window.incomePieChart.destroy();
-                }
-                if (window.expensePieChart) {
-                    window.expensePieChart.destroy();
-                }
+        // Уничтожение старых графиков, если они существуют
+        if (window.incomeChart && typeof window.incomeChart.destroy === 'function') {
+            window.incomeChart.destroy();
+        }
+        if (window.expenseChart && typeof window.expenseChart.destroy === 'function') {
+            window.expenseChart.destroy();
+        }
+        if (window.incomePieChart && typeof window.incomePieChart.destroy === 'function') {
+            window.incomePieChart.destroy();
+        }
+        if (window.expensePieChart && typeof window.expensePieChart.destroy === 'function') {
+            window.expensePieChart.destroy();
+        }
+        if (window.incomeLineChart && typeof window.incomeLineChart.destroy === 'function') {
+            window.incomeLineChart.destroy();
+        }
+        if (window.expenseLineChart && typeof window.expenseLineChart.destroy === 'function') {
+            window.expenseLineChart.destroy();
+        }
 
-                var ctxIncome = $('#incomeChart')[0].getContext('2d');
-                window.incomeChart = new Chart(ctxIncome, {
-                    type: 'bar',
-                    data: {
-                        labels: incomeLabels,
-                        datasets: [{
-                            label: 'Income',
-                            data: incomeValues,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
+        var ctxIncome = $('#incomeChart')[0].getContext('2d');
+        window.incomeChart = new Chart(ctxIncome, {
+            type: 'bar',
+            data: {
+                labels: incomeLabels,
+                datasets: [{
+                    label: 'Income',
+                    data: incomeValues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
-                });
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
 
+        var ctxExpense = $('#expenseChart')[0].getContext('2d');
+        window.expenseChart = new Chart(ctxExpense, {
+            type: 'bar',
+            data: {
+                labels: expenseLabels,
+                datasets: [{
+                    label: 'Expenses',
+                    data: expenseValues,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Добавьте аналогичный код для других графиков, таких как pie и line charts
+
+        // Обновление истории доходов и расходов
+        var incomeHistoryHTML = '';
+        data.income_history.forEach(function(income) {
+            incomeHistoryHTML += '<tr><td>' + income.date + '</td><td>' + income.source + '</td><td>$' + income.amount.toFixed(2) + '</td></tr>';
+        });
+        $('#income-history').html(incomeHistoryHTML);
+
+        var expenseHistoryHTML = '';
+        data.expense_history.forEach(function(expense) {
+            expenseHistoryHTML += '<tr><td>' + expense.date + '</td><td>' + expense.category + '</td><td>$' + expense.amount.toFixed(2) + '</td></tr>';
+        });
+        $('#expense-history').html(expenseHistoryHTML);
+    });
                 var ctxExpense = $('#expenseChart')[0].getContext('2d');
                 window.expenseChart = new Chart(ctxExpense, {
                     type: 'bar',
                     data: {
-                        labels: expenseLabels,
+                        labels: Object.keys(data.expenses),
                         datasets: [{
                             label: 'Expenses',
-                            data: expenseValues,
+                            data: Object.values(data.expenses),
                             backgroundColor: 'rgba(255, 99, 132, 0.6)',
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1
@@ -240,26 +301,19 @@
                     }
                 });
 
+                // Initialize Pie Charts
                 var ctxIncomePie = $('#incomePieChart')[0].getContext('2d');
                 window.incomePieChart = new Chart(ctxIncomePie, {
                     type: 'pie',
                     data: {
-                        labels: incomeLabels,
+                        labels: Object.keys(data.incomes),
                         datasets: [{
-                            data: incomeValues,
-                            backgroundColor: [
-                                'rgba(75, 192, 192, 0.6)',
-                                'rgba(54, 162, 235, 0.6)',
-                                'rgba(255, 206, 86, 0.6)',
-                                'rgba(153, 102, 255, 0.6)',
-                                'rgba(255, 159, 64, 0.6)'
-                            ],
-                            borderColor: 'rgba(255, 255, 255, 1)',
-                            borderWidth: 2
+                            label: 'Income Distribution',
+                            data: Object.values(data.incomes),
+                            backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(153, 102, 255, 0.6)'],
                         }]
                     },
                     options: {
-                        responsive: true,
                         plugins: {
                             legend: {
                                 position: 'top'
@@ -272,22 +326,14 @@
                 window.expensePieChart = new Chart(ctxExpensePie, {
                     type: 'pie',
                     data: {
-                        labels: expenseLabels,
+                        labels: Object.keys(data.expenses),
                         datasets: [{
-                            data: expenseValues,
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.6)',
-                                'rgba(255, 159, 64, 0.6)',
-                                'rgba(255, 205, 86, 0.6)',
-                                'rgba(75, 192, 192, 0.6)',
-                                'rgba(153, 102, 255, 0.6)'
-                            ],
-                            borderColor: 'rgba(255, 255, 255, 1)',
-                            borderWidth: 2
+                            label: 'Expense Distribution',
+                            data: Object.values(data.expenses),
+                            backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(54, 162, 235, 0.6)'],
                         }]
                     },
                     options: {
-                        responsive: true,
                         plugins: {
                             legend: {
                                 position: 'top'
@@ -296,51 +342,103 @@
                     }
                 });
 
-                // Update tables
-                $('#income-history').empty();
-                $('#expense-history').empty();
-
-                // Add income history rows
-                incomeLabels.forEach((label, index) => {
-                    $('#income-history').append(
-                        `<tr>
-                            <td>${new Date().toLocaleDateString()}</td>
-                            <td>${label}</td>
-                            <td>$${incomeValues[index].toFixed(2)}</td>
-                        </tr>`
-                    );
+                // Initialize Line Charts
+                var ctxIncomeLine = $('#incomeLineChart')[0].getContext('2d');
+                window.incomeLineChart = new Chart(ctxIncomeLine, {
+                    type: 'line',
+                    data: {
+                        labels: [], // Add dates or periods for X-axis
+                        datasets: [{
+                            label: 'Income Over Time',
+                            data: [], // Add income data over time
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
                 });
 
-                // Add expense history rows
-                expenseLabels.forEach((label, index) => {
-                    $('#expense-history').append(
-                        `<tr>
-                            <td>${new Date().toLocaleDateString()}</td>
-                            <td>${label}</td>
-                            <td>$${expenseValues[index].toFixed(2)}</td>
-                        </tr>`
-                    );
+                var ctxExpenseLine = $('#expenseLineChart')[0].getContext('2d');
+                window.expenseLineChart = new Chart(ctxExpenseLine, {
+                    type: 'line',
+                    data: {
+                        labels: [], // Add dates or periods for X-axis
+                        datasets: [{
+                            label: 'Expenses Over Time',
+                            data: [], // Add expense data over time
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
                 });
+
+                // Update history tables
+                var incomeHistoryHTML = '';
+                data.income_history.forEach(function(income) {
+                    incomeHistoryHTML += '<tr><td>' + income.date + '</td><td>' + income.source + '</td><td>$' + income.amount.toFixed(2) + '</td></tr>';
+                });
+                $('#income-history').html(incomeHistoryHTML);
+
+                var expenseHistoryHTML = '';
+                data.expense_history.forEach(function(expense) {
+                    expenseHistoryHTML += '<tr><td>' + expense.date + '</td><td>' + expense.category + '</td><td>$' + expense.amount.toFixed(2) + '</td></tr>';
+                });
+                $('#expense-history').html(expenseHistoryHTML);
             });
         }
 
         $(document).ready(function() {
             fetchData();
 
-            $('#add-income-form').submit(function(e) {
+            $('#add-income-form').on('submit', function(e) {
                 e.preventDefault();
-                const amount = $('#income-amount').val();
-                const source = $('#income-source').val();
-                $.post('/add_income', { source: source, amount: amount }, function() {
+                var amount = $('#income-amount').val();
+                var source = $('#income-source').val();
+                $.post('/add_income', { amount: amount, source: source }, function() {
+                    $('#income-amount').val('');
+                    $('#income-source').val('');
                     fetchData();
                 });
             });
 
-            $('#add-expense-form').submit(function(e) {
+            $('#add-expense-form').on('submit', function(e) {
                 e.preventDefault();
-                const amount = $('#expense-amount').val();
-                const category = $('#expense-category').val();
-                $.post('/add_expense', { category: category, amount: amount }, function() {
+                var amount = $('#expense-amount').val();
+                var category = $('#expense-category').val();
+                $.post('/add_expense', { amount: amount, category: category }, function() {
+                    $('#expense-amount').val('');
+                    $('#expense-category').val('');
                     fetchData();
                 });
             });
